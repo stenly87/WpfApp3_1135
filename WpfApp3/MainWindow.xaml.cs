@@ -102,8 +102,12 @@ namespace WpfApp3
             }
         }
         WeatherData data;
+        int selectedIndex = 0;
         private void listSelect(object sender, SelectionChangedEventArgs e)
         {
+            if (listBox1.SelectedIndex == -1)
+                return;
+            selectedIndex = listBox1.SelectedIndex;
             data = (WeatherData)listBox1.SelectedItem;
             datePicker.SelectedDate = DateTime.FromBinary(data.date);
             textC.Text = data.temperatureC.ToString();
@@ -127,7 +131,7 @@ namespace WpfApp3
             string result = null;
             using (var stream = response.GetResponseStream())
             {
-                byte[] array = new byte[response.ContentLength];
+                byte[] array = new byte[5];
                 stream.Read(array, 0, array.Length);
                 result = Encoding.UTF8.GetString(array);
             }
@@ -135,7 +139,7 @@ namespace WpfApp3
                 MessageBox.Show("Не удалось обновить объект на сервере");
             else
             {
-                listBox1.Items[listBox1.SelectedIndex] = data;
+                listBox1.Items[selectedIndex] = data;
             }
         }
     }
