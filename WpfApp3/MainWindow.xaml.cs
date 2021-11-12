@@ -138,7 +138,7 @@ namespace WpfApp3
             if (!result)
                 MessageBox.Show("Не удалось обновить объект на сервере");
             else
-                listBox1.Items[selectedIndex] = data;
+                btnClick(this, new RoutedEventArgs());
         }
 
         private void btnClickDelete(object sender, RoutedEventArgs e)
@@ -158,7 +158,7 @@ namespace WpfApp3
             if (!result)
                 MessageBox.Show("Не удалось удалить объект"); 
             else
-                listBox1.Items.RemoveAt(selectedIndex);
+                btnClick(this, new RoutedEventArgs());
         }
     }
 }
