@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition />
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <ListBox x:Name="listBox1" SelectionChanged="listSelect"/>
         <Button Content="Test Get" Grid.Row="1" Click="btnClick"/>
@@ -23,5 +24,6 @@
             <TextBox x:Name="textSummary"/>
         </StackPanel>
         <Button Content="Test Put" Grid.Row="4" Click="btnClickPut"/>
+        <Button Content="Test Delete" Grid.Row="5" Click="btnClickDelete"/>
     </Grid>
 </Window>

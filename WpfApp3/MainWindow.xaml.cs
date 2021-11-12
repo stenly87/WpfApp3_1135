@@ -128,19 +128,39 @@ namespace WpfApp3
             using (var stream = request.GetRequestStream())
                 jsonSerializer.WriteObject(stream, data);
             var response = request.GetResponse();
-            string result = null;
+            bool result = false;
             using (var stream = response.GetResponseStream())
             {
-                byte[] array = new byte[5];
-                stream.Read(array, 0, array.Length);
-                result = Encoding.UTF8.GetString(array);
+                jsonSerializer =
+                    new DataContractJsonSerializer(typeof(bool));
+                result = (bool)jsonSerializer.ReadObject(stream);
             }
-            if (result == "false")
+            if (result)
                 MessageBox.Show("Не удалось обновить объект на сервере");
             else
             {
                 listBox1.Items[selectedIndex] = data;
             }
+        }
+
+        private void btnClickDelete(object sender, RoutedEventArgs e)
+        {
+            if (selectedIndex == -1)
+                return;
+            var request = WebRequest.Create($"{url}?id={data.id}");
+            request.Method = "DELETE";
+            var response = request.GetResponse();
+            bool result = false;
+            using (var stream = response.GetResponseStream())
+            {
+                DataContractJsonSerializer jsonSerializer = 
+                    new DataContractJsonSerializer(typeof(bool));
+                result = (bool)jsonSerializer.ReadObject(stream);
+            }
+            if (result)
+                listBox1.Items.RemoveAt(selectedIndex);
+            else
+                MessageBox.Show("Не удалось удалить объект");
         }
     }
 }
