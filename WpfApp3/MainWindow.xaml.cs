@@ -135,12 +135,10 @@ namespace WpfApp3
                     new DataContractJsonSerializer(typeof(bool));
                 result = (bool)jsonSerializer.ReadObject(stream);
             }
-            if (result)
+            if (!result)
                 MessageBox.Show("Не удалось обновить объект на сервере");
             else
-            {
                 listBox1.Items[selectedIndex] = data;
-            }
         }
 
         private void btnClickDelete(object sender, RoutedEventArgs e)
@@ -157,10 +155,10 @@ namespace WpfApp3
                     new DataContractJsonSerializer(typeof(bool));
                 result = (bool)jsonSerializer.ReadObject(stream);
             }
-            if (result)
-                listBox1.Items.RemoveAt(selectedIndex);
+            if (!result)
+                MessageBox.Show("Не удалось удалить объект"); 
             else
-                MessageBox.Show("Не удалось удалить объект");
+                listBox1.Items.RemoveAt(selectedIndex);
         }
     }
 }
