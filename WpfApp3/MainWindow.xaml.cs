@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization.Json;
@@ -20,145 +22,54 @@ namespace WpfApp3
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private QRCode selectedCode;
+
+        public QRCode SelectedCode
+        {
+            get => selectedCode;
+            set
+            { 
+                selectedCode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedCode"));
+            }
+        }
+        public ObservableCollection<QRCode> Codes { get; set; } = new ObservableCollection<QRCode>();
+
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
+            var codes = QrCodeRestClient.GetAllQRCodes();
+            foreach (var code in codes)
+                Codes.Add(code);
         }
 
-        string url = @"http://localhost:42394/WeatherForecast";
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        private void btnClick(object sender, RoutedEventArgs e)
+        private void btnUpdate(object sender, RoutedEventArgs e)
         {
-            var request = WebRequest.Create(url);
-            var response = request.GetResponse();
-            DataContractJsonSerializer jsonSerializer =
-                new DataContractJsonSerializer(typeof(List<WeatherData>));
-
-            using (var stream = response.GetResponseStream())
+            if (SelectedCode == null)
             {
-                var answer =
-                    (List<WeatherData>)jsonSerializer.ReadObject(stream);
-                listBox1.ItemsSource = null;
-                listBox1.Items.Clear();
-                listBox1.ItemsSource = answer;
+                var code = QrCodeRestClient.Post(new QRCode());
+                Codes.Add(code);
             }
-
-        }
-
-        [Serializable]
-        struct WeatherData
-        {
-            public int id;
-            public long date;
-            public int temperatureC;
-            public int temperatureF;
-            public string summary;
-
-            public override string ToString()
-            {
-                return $"{DateTime.FromBinary(date).ToLongDateString()} {temperatureC} {summary}";
-            }
-        }
-
-        private void btnClickPost(object sender, RoutedEventArgs e)
-        {
-            var request = WebRequest.Create(url);
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            var data = new WeatherData
-            {
-                date = DateTime.UtcNow.ToBinary(),
-                summary = "жарко",
-                temperatureC = 26
-            };
-            DataContractJsonSerializer dataContractJson =
-                new DataContractJsonSerializer(typeof(WeatherData));
-            using (var stream = request.GetRequestStream())
-                dataContractJson.WriteObject(stream, data);
-
-            try
-            {
-                var responce = (HttpWebResponse)request.GetResponse();
-                Title = responce.StatusCode.ToString();
-                if (responce.StatusCode == HttpStatusCode.OK)
-                {
-                    using (var stream = responce.GetResponseStream())
-                    {
-                        var answer = dataContractJson.ReadObject(stream);
-                        listBox1.ItemsSource = null;
-                        listBox1.Items.Add(answer);
-                    }
-                }
-            }
-            catch (WebException error)
-            {
-                MessageBox.Show(error.Message);
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show(error.Message);
-            }
-        }
-        WeatherData data;
-        int selectedIndex = 0;
-        private void listSelect(object sender, SelectionChangedEventArgs e)
-        {
-            if (listBox1.SelectedIndex == -1)
-                return;
-            selectedIndex = listBox1.SelectedIndex;
-            data = (WeatherData)listBox1.SelectedItem;
-            datePicker.SelectedDate = DateTime.FromBinary(data.date);
-            textC.Text = data.temperatureC.ToString();
-            textSummary.Text = data.summary;
-        }
-
-        private void btnClickPut(object sender, RoutedEventArgs e)
-        {
-            if (data.id == 0) return;
-            data.date = ((DateTime)datePicker.SelectedDate).ToBinary();
-            data.temperatureC = int.Parse(textC.Text);
-            data.summary = textSummary.Text;
-            DataContractJsonSerializer jsonSerializer =
-                new DataContractJsonSerializer(typeof(WeatherData));
-            var request = WebRequest.Create(url);
-            request.Method = "PUT";
-            request.ContentType = "application/json";
-            using (var stream = request.GetRequestStream())
-                jsonSerializer.WriteObject(stream, data);
-            var response = request.GetResponse();
-            bool result = false;
-            using (var stream = response.GetResponseStream())
-            {
-                jsonSerializer =
-                    new DataContractJsonSerializer(typeof(bool));
-                result = (bool)jsonSerializer.ReadObject(stream);
-            }
-            if (!result)
-                MessageBox.Show("Не удалось обновить объект на сервере");
             else
-                btnClick(this, new RoutedEventArgs());
+            {
+                if (!QrCodeRestClient.Put(SelectedCode))
+                    MessageBox.Show("Не удалось обновить объект на сервере");
+            }
         }
 
-        private void btnClickDelete(object sender, RoutedEventArgs e)
+        private void btnDelete(object sender, RoutedEventArgs e)
         {
-            if (selectedIndex == -1)
+            if (SelectedCode == null)
                 return;
-            var request = WebRequest.Create($"{url}?id={data.id}");
-            request.Method = "DELETE";
-            var response = request.GetResponse();
-            bool result = false;
-            using (var stream = response.GetResponseStream())
-            {
-                DataContractJsonSerializer jsonSerializer = 
-                    new DataContractJsonSerializer(typeof(bool));
-                result = (bool)jsonSerializer.ReadObject(stream);
-            }
-            if (!result)
-                MessageBox.Show("Не удалось удалить объект"); 
+            if (!QrCodeRestClient.Delete(SelectedCode))
+                MessageBox.Show("Не удалось удалить объект на сервере");
             else
-                btnClick(this, new RoutedEventArgs());
+                Codes.Remove(SelectedCode);
         }
     }
 }

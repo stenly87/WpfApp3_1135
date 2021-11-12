@@ -8,22 +8,33 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition />
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ListBox x:Name="listBox1" SelectionChanged="listSelect"/>
-        <Button Content="Test Get" Grid.Row="1" Click="btnClick"/>
-        <Button Content="Test Post" Grid.Row="2" Click="btnClickPost"/>
-        <StackPanel Grid.Row="3">
-            <DatePicker x:Name="datePicker"/>
-            <TextBox x:Name="textC"/>
-            <TextBox x:Name="textSummary"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="Продажа qr-кодов" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
+        <ListView Grid.Row="1" ItemsSource="{Binding Codes}" SelectedItem="{Binding SelectedCode}">
+            <ListView.View>
+                <GridView >
+                    <GridViewColumn Header="id" DisplayMemberBinding="{Binding id}" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding name}" />
+                    <GridViewColumn Header="Age" DisplayMemberBinding="{Binding age}" />
+                    <GridViewColumn Header="Date end" DisplayMemberBinding="{Binding date}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel DataContext="{Binding SelectedCode}" Grid.Row="1" Grid.Column="1">
+            <TextBlock Text="Name"/>
+            <TextBox Text="{Binding name}"/>
+            <TextBlock Text="Age"/>
+            <TextBox Text="{Binding age}"/>
+            <TextBlock Text="Date end"/>
+            <DatePicker SelectedDate="{Binding date}"/>
+            <Button Content="Update or new" Click="btnUpdate"/>
+            <Button Content="Delete" Click="btnDelete"/>
         </StackPanel>
-        <Button Content="Test Put" Grid.Row="4" Click="btnClickPut"/>
-        <Button Content="Test Delete" Grid.Row="5" Click="btnClickDelete"/>
     </Grid>
 </Window>
